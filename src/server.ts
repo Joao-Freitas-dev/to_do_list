@@ -1,5 +1,8 @@
-import { ApolloServer } from "apollo-server";
 import "reflect-metadata";
+
+import path from "node:path";
+
+import { ApolloServer } from "apollo-server";
 import { buildSchema } from "type-graphql";
 import { ToDoListResolver } from "./resolvers/toDoList-resolver";
 
@@ -9,6 +12,7 @@ async function main() {
     // 'await' é usado para esperar a promessa ser resolvida antes de atribuir o resultado à variável 'schema'.
     const schema = await buildSchema({
         resolvers: [ToDoListResolver],
+        emitSchemaFile: path.resolve(__dirname, "schema.gql"),
     });
 
     // 'ApolloServer' é uma classe que encapsula a configuração de um servidor GraphQL.
