@@ -13,8 +13,11 @@ export class CreateToDoList {
     @Field()
     description: string;
 
-    //data de criação//precisamos colocar o type deles (nesse caso field)
-    @IsDate()
+    @IsString()
     @Field()
-    createdAt: Date;
+    status: string;
+
+    @IsString()
+    @Field()
+    createdAt: string;
 }
