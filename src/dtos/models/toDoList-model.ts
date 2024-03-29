@@ -1,12 +1,11 @@
 import { Field, ObjectType } from "type-graphql";
 
-//colocando o type dela
+//colocando o type
 @ObjectType()
 //class model
 export class ToDoListModel {
-    //field Userid que vamos usar para fazer o relacionamento com user
     @Field()
-    Id: string;
+    id: string;
 
     @Field()
     title: string;
@@ -18,5 +17,5 @@ export class ToDoListModel {
     status: string;
 
     @Field()
-    createdAt: Date;
+    createdAt: string;
 }
