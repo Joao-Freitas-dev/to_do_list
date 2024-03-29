@@ -50,7 +50,7 @@ Isso iniciará um servidor local para o projeto.
 
 Testar as operações GraphQL:
 
-Abra um navegador e acesse http://localhost:4000/graphql.
+Abra um navegador e acesse http://localhost:port/graphql.
 Você pode utilizar a interface GraphiQL para testar as queries e mutations.
 Alguns exemplos de operações:
 
