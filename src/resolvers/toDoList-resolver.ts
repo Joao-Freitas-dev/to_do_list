@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { Arg, Mutation, Resolver, Query } from "type-graphql";
 import { CreateToDoList } from "../dtos/inputs/create-toDoList-input";
 import { ToDoListModel } from "../dtos/models/toDoList-model";
@@ -7,9 +8,16 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-AWS.config.update({ region: process.env.AWS_REGION });
+const dynamoDBConfig = {
+    region: process.env.AWS_REGION,
+    endpoint: process.env.AWS_ENDPOINT,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+};
 
-// Crie uma instância do DocumentClient do DynamoDB
+AWS.config.update(dynamoDBConfig);
+
+//instância do DocumentClient do DynamoDB
 const docClient = new AWS.DynamoDB.DocumentClient();
 
 // Define o resolver para manipular operações relacionadas à lista de tarefas (ToDoList)
@@ -31,7 +39,7 @@ export class ToDoListResolver {
                 id: item.id,
                 title: item.title,
                 description: item.description,
-                status: item.status,
+                state: item.state,
                 createdAt: new Date(item.createdAt),
             } as unknown as ToDoListModel; // Converte os itens para o tipo ToDoListModel
         });
@@ -48,7 +56,7 @@ export class ToDoListResolver {
         // Define a data de criação como a data atual caso não tenhamos entrada
         const createdAt = data.createdAt || new Date();
         // Define o status como "pending" se não for fornecido na entrada
-        const status = data.status || "pending";
+        const status = data.state || "pending";
 
         // Define os parâmetros para adicionar um novo item na tabela "Todolist"
         const params = {
@@ -57,7 +65,7 @@ export class ToDoListResolver {
                 id: id,
                 title: data.title,
                 description: data.description,
-                status: status,
+                state: status,
                 createdAt: createdAt.toString(), // Converte a data para string
             },
         };
@@ -70,34 +78,57 @@ export class ToDoListResolver {
             return { ...params.Item } as unknown as ToDoListModel;
         } catch (err) {
             // Registra e relança um erro se ocorrer algum problema ao salvar o item
-            console.error("Erro ao salvar item no DynamoDB:", err);
-            throw new Error("Erro ao salvar item no DynamoDB");
+            if (err instanceof Error) {
+                throw new Error(
+                    "Erro ao salvar item no DynamoDB: " + err.toString()
+                );
+            } else {
+                throw new Error("Erro ao salvar item no DynamoDB");
+            }
         }
     }
 
     // atualiza uma entrada existente na lista de tarefas
     @Mutation(() => ToDoListModel)
     async updateToDo(@Arg("id") id: string, @Arg("data") data: CreateToDoList) {
-        // Define os parâmetros para atualizar um item na tabela "Todolist"
-        const params = {
-            TableName: "Todolist",
-            Key: {
-                id: id,
-            },
-            UpdateExpression: "set title = :t, description = :d, status = :s",
-            ExpressionAttributeValues: {
+        try {
+            const expressionAttributeNames = {
+                "#s": "state",
+            };
+
+            const updateExpression =
+                "set title = :t, description = :d, #s = :s";
+
+            // Define the attribute values
+            const expressionAttributeValues = {
                 ":t": data.title,
                 ":d": data.description,
-                ":s": data.status,
-            },
-            ReturnValues: "ALL_NEW", // Retorna o item atualizado
-        };
+                ":s": data.state,
+            };
 
-        // Atualiza o item na tabela e aguarda a resposta com o item atualizado
-        const updatedItem = await docClient.update(params).promise();
+            const params = {
+                TableName: "Todolist",
+                Key: {
+                    id: id,
+                },
+                UpdateExpression: updateExpression,
+                ExpressionAttributeNames: expressionAttributeNames,
+                ExpressionAttributeValues: expressionAttributeValues,
+                ReturnValues: "ALL_NEW",
+            };
 
-        // Retorna o item atualizado
-        return updatedItem.Attributes as ToDoListModel;
+            const updatedItem = await docClient.update(params).promise();
+
+            return updatedItem.Attributes as ToDoListModel;
+        } catch (err) {
+            if (err instanceof Error) {
+                throw new Error(
+                    "Erro ao atualizar item no DynamoDB: " + err.toString()
+                );
+            } else {
+                throw new Error("Erro ao atualizar item no DynamoDB");
+            }
+        }
     }
 
     //deleteToDo para excluir uma entrada existente na lista de tarefas

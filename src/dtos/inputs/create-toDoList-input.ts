@@ -15,8 +15,9 @@ export class CreateToDoList {
 
     @IsString()
     @Field()
-    status: string;
+    state: string;
 
+    //data de criação//precisamos colocar o type deles (nesse caso field)
     @IsString()
     @Field()
     createdAt: string;

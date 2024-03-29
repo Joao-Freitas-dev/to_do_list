@@ -1,27 +1,33 @@
 import "reflect-metadata";
 import path from "node:path";
 import { ApolloServer } from "apollo-server";
+// import { APIGatewayProxyEventV2, Context } from "aws-lambda";
 import { buildSchema } from "type-graphql";
 import { ToDoListResolver } from "./resolvers/toDoList-resolver";
-import AWS from "aws-sdk";
-import dotenv from "dotenv";
 
-// Carrega as variáveis de ambiente do arquivo .env
-dotenv.config();
+// export const handler = async function main(
+//     event: APIGatewayProxyEventV2,
+//     context: Context
+// ) {
+//     const schema = await buildSchema({
+//         resolvers: [ToDoListResolver],
+//     });
 
-// Configuração do DynamoDB com base nas variáveis de ambiente
-const dynamoDBConfig = {
-    region: process.env.AWS_REGION,
-    endpoint: process.env.AWS_ENDPOINT,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-};
+//     const server = new ApolloServer({ schema });
 
-// Configura o SDK da AWS com as informações do DynamoDB local
-AWS.config.update(dynamoDBConfig);
+//     const handler = server.createHandler();
 
-// Crie uma instância do DocumentClient do DynamoDB
-const docClient = new AWS.DynamoDB.DocumentClient();
+//     // Cria um novo callback que resolve quando a promessa é resolvida
+//     const callback = (error: any, result: any) => {
+//         if (error) {
+//             return Promise.reject(error);
+//         } else {
+//             return Promise.resolve(result);
+//         }
+//     };
+
+//     return handler(event, context, callback);
+// };
 
 async function main() {
     // Constrói o esquema GraphQL

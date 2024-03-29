@@ -14,7 +14,7 @@ export class ToDoListModel {
     description: string;
 
     @Field()
-    status: string;
+    state: string;
 
     @Field()
     createdAt: string;
